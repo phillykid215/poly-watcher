@@ -16,6 +16,13 @@ MIN_STAKE = float(os.environ.get("MIN_STAKE", "500"))
 # Wallets whose alerts get the MAX PLAY tag (comma-separated addresses)
 MAX_WALLETS = {w.strip().lower() for w in os.environ.get("MAX_WALLETS", "").split(",") if w.strip()}
 
+# Display names: "0xabc...=Name,0xdef...=Other Name"
+WALLET_NAMES = {}
+for pair in os.environ.get("WALLET_NAMES", "").split(","):
+    if "=" in pair:
+        addr, label = pair.split("=", 1)
+        WALLET_NAMES[addr.strip().lower()] = label.strip()
+
 # Hour (0-23) in US Eastern to post the daily recap
 RECAP_HOUR = int(os.environ.get("RECAP_HOUR", "10"))
 
@@ -79,7 +86,7 @@ def send_alert(a, wallet):
     price = float(a.get("price", 0))
     title = a.get("title") or a.get("slug") or "Unknown market"
     slug = a.get("eventSlug") or a.get("slug") or ""
-    who = a.get("pseudonym") or a.get("name") or wallet[:8]
+    who = WALLET_NAMES.get(wallet) or a.get("pseudonym") or a.get("name") or wallet[:8]
     emoji = "\U0001f7e2" if side == "BUY" else "\U0001f534"
 
     header = "\U0001f525 <b>MAX PLAY</b>\n" if wallet in MAX_WALLETS else ""
